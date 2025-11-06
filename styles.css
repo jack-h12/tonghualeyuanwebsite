@@ -169,7 +169,6 @@ body {
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: 120px 0 80px;
     position: relative;
 }
 
@@ -177,9 +176,10 @@ body {
     text-align: center;
     max-width: 1200px;
     margin: 0 auto;
-    animation: fadeInUp 1s ease-out, gentleFloat 6s ease-in-out infinite 1s;
+    animation: fadeInUp 1s ease-out, slowBounce 6s cubic-bezier(0.4, 0, 0.6, 1) infinite 1s;
     width: 100%;
-    padding: 0 20px;
+    margin-top: 40px;
+    padding: 40px 20px;
     transform: translateY(20px);
 }
 
@@ -194,7 +194,7 @@ body {
     }
 }
 
-@keyframes gentleFloat {
+@keyframes slowBounce {
     0%, 100% {
         transform: translateY(20px);
     }
@@ -668,22 +668,25 @@ section {
 @media (max-width: 768px) {
     .nav-links {
         position: fixed;
-        top: 70px;
-        left: -100%;
+        top: 0;
+        right: -100%; /* start off-screen right */
+        height: 100vh; /* full height */
         flex-direction: column;
         background: rgba(10, 14, 39, 0.95);
-        width: 100%;
+        width: 250px; /* menu width */
         padding: 2rem;
-        transition: left 0.3s ease;
+        transition: right 0.3s ease;
         gap: 1rem;
+        z-index: 1001;
     }
 
     .nav-links.active {
-        left: 0;
+        right: 0; /* slide in */
     }
 
     .hamburger {
         display: flex;
+        z-index: 1002; /* above menu */
     }
 
     .hero {
