@@ -123,15 +123,19 @@
                     </div>
                 </div>
                 <div class="contact-form">
-                    <form id="contactForm">
+                    <form id="contactForm" action="https://formsubmit.co/hjwzh@yahoo.com" method="POST">
+                        <input type="hidden" name="_captcha" value="false">
+                        <input type="hidden" name="_subject" value="新消息来自睡前故事网站">
+                        <input type="hidden" name="_next" value="">
+                        <input type="hidden" name="_autoresponse" value="谢谢您联系我们！我们已经收到您的消息，会尽快回复您。🌙✨">
                         <div class="form-group">
-                            <input type="text" id="name" placeholder="您的姓名" required>
+                            <input type="text" id="name" name="name" placeholder="您的姓名" required>
                         </div>
                         <div class="form-group">
-                            <input type="email" id="email" placeholder="您的邮箱" required>
+                            <input type="email" id="email" name="email" placeholder="您的邮箱" required>
                         </div>
                         <div class="form-group">
-                            <textarea id="message" rows="5" placeholder="您的留言或故事建议" required></textarea>
+                            <textarea id="message" name="message" rows="5" placeholder="您的留言或故事建议" required></textarea>
                         </div>
                         <button type="submit" class="btn btn-primary">发送消息</button>
                     </form>

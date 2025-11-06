@@ -74,20 +74,36 @@ createStars();
 // Contact form handling
 const contactForm = document.getElementById('contactForm');
 if (contactForm) {
+    // Set the redirect URL to the current page with a success parameter
+    const nextUrl = new URL(window.location.href);
+    nextUrl.searchParams.set('success', 'true');
+    const nextInput = contactForm.querySelector('input[name="_next"]');
+    if (nextInput) {
+        nextInput.value = nextUrl.toString();
+    }
+    
+    // Show success message if redirected back
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('success') === 'true') {
+        // Show success message
+        const successMessage = document.createElement('div');
+        successMessage.className = 'form-success';
+        successMessage.style.cssText = 'background: rgba(255, 215, 0, 0.1); border: 2px solid #ffd700; color: #ffd700; padding: 20px; border-radius: 12px; margin-bottom: 25px; text-align: center; font-size: 1.1rem; box-shadow: 0 4px 15px rgba(255, 215, 0, 0.2); animation: fadeIn 0.5s ease-in;';
+        successMessage.innerHTML = '✨ 谢谢您！我们已经收到您的消息，会尽快回复您！🌙✨';
+        contactForm.parentNode.insertBefore(successMessage, contactForm);
+        
+        // Remove success parameter from URL
+        window.history.replaceState({}, document.title, window.location.pathname);
+        
+        // Scroll to success message
+        setTimeout(() => {
+            successMessage.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }, 100);
+    }
+    
     contactForm.addEventListener('submit', (e) => {
-        e.preventDefault();
-        
-        // Get form values
-        const name = document.getElementById('name').value;
-        const email = document.getElementById('email').value;
-        const message = document.getElementById('message').value;
-        
-        // Simple validation
-        if (name && email && message) {
-            // In a real application, you would send this to a server
-            alert(`谢谢您，${name}！我们已经收到您的消息，会尽快回复您！🌙✨`);
-            contactForm.reset();
-        }
+        // Let the form submit naturally to FormSubmit
+        // FormSubmit will handle the email sending and redirect
     });
 }
 
