@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>睡前故事 - 童话乐园</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Comfortaa:wght@300;400;600;700&family=Fredoka:wght@300;400;500;600&family=ZCOOL+KuaiLe&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="stars" id="stars"></div>
+    <div class="twinkling" id="twinkling"></div>
+    
+    <nav class="navbar">
+        <div class="container">
+            <div class="logo">
+                <span class="moon">🌙</span>
+                <span class="logo-text">睡前故事</span>
+            </div>
+            <ul class="nav-links">
+                <li><a href="#home">首页</a></li>
+                <li><a href="#about">关于我们</a></li>
+                <li><a href="#stories">故事集</a></li>
+                <li><a href="#contact">联系我们</a></li>
+            </ul>
+            <div class="hamburger">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+        </div>
+    </nav>
+
+    <section id="home" class="hero">
+        <div class="container">
+            <div class="hero-content">
+                <h1 class="hero-title">梦幻睡前故事</h1>
+                <p class="hero-subtitle">甜美的梦从奇幻故事开始</p>
+                <p class="hero-description">和我们一起踏上魔法森林、神奇王国和星空下的冒险之旅。每个故事都精心制作，帮助您的宝贝安然进入梦乡。</p>
+                <div class="hero-buttons">
+                    <a href="#stories" class="btn btn-primary">观看故事</a>
+                    <a href="https://www.youtube.com/@ChineseFairyTales-l3c" target="_blank" class="btn btn-secondary">
+                        <span>📺</span> YouTube 频道
+                    </a>
+                </div>
+            </div>
+            <div class="hero-illustration">
+                <div class="cloud cloud1"></div>
+                <div class="cloud cloud2"></div>
+                <div class="cloud cloud3"></div>
+            </div>
+        </div>
+    </section>
+
+    <section id="about" class="about">
+        <div class="container">
+            <h2 class="section-title">关于我们的故事</h2>
+            <div class="about-content">
+                <div class="about-text">
+                    <p class="intro-text">欢迎来到一个让睡前时光变得最神奇的世界。</p>
+                    <p>我们的睡前故事经过精心制作，营造宁静平和的氛围，完美帮助孩子们放松身心，进入甜美的梦乡。每个故事都用温暖和关爱来讲述，包含温和的冒险、友好的角色和圆满的结局。</p>
+                    <p>无论您的孩子喜欢公主、动物、太空冒险还是童话故事，我们都有能够激发他们想象力并让他们安然入睡的故事。</p>
+                    <div class="features">
+                        <div class="feature">
+                            <span class="feature-icon">🌙</span>
+                            <h3>舒缓的讲述</h3>
+                            <p>温和、舒缓的声音，专为放松而设计</p>
+                        </div>
+                        <div class="feature">
+                            <span class="feature-icon">✨</span>
+                            <h3>奇幻冒险</h3>
+                            <p>激发想象力的迷人故事</p>
+                        </div>
+                        <div class="feature">
+                            <span class="feature-icon">💤</span>
+                            <h3>助眠友好</h3>
+                            <p>完美的时长和节奏，适合睡前聆听</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="stories" class="stories">
+        <div class="container">
+            <h2 class="section-title">热门故事</h2>
+            <p class="section-subtitle">发现我们最受欢迎的睡前故事</p>
+            <div class="video-grid" id="videoGrid">
+                <!-- Videos will be loaded dynamically -->
+                <div class="loading-placeholder">
+                    <div class="spinner"></div>
+                    <p>正在加载视频...</p>
+                </div>
+            </div>
+            <div class="youtube-link">
+                <a href="https://www.youtube.com/@ChineseFairyTales-l3c" target="_blank" class="btn btn-primary">
+                    访问 YouTube 频道，观看更多故事
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <section id="contact" class="contact">
+        <div class="container">
+            <h2 class="section-title">甜美的梦 & 保持联系</h2>
+            <p class="section-subtitle">每周关注我们，获取新的睡前故事</p>
+            <div class="contact-content">
+                <div class="contact-info">
+                    <div class="contact-item">
+                        <span class="contact-icon">📺</span>
+                        <div>
+                            <h3>YouTube</h3>
+                            <a href="https://www.youtube.com/@ChineseFairyTales-l3c" target="_blank">订阅获取新故事</a>
+                        </div>
+                    </div>
+                    <div class="contact-item">
+                        <span class="contact-icon">💬</span>
+                        <div>
+                            <h3>建议</h3>
+                            <p>有故事想法吗？我们很乐意听到！</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="contact-form">
+                    <form id="contactForm">
+                        <div class="form-group">
+                            <input type="text" id="name" placeholder="您的姓名" required>
+                        </div>
+                        <div class="form-group">
+                            <input type="email" id="email" placeholder="您的邮箱" required>
+                        </div>
+                        <div class="form-group">
+                            <textarea id="message" rows="5" placeholder="您的留言或故事建议" required></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-primary">发送消息</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <footer class="footer">
+        <div class="container">
+            <p>&copy; 2024 睡前故事。保留所有权利。 | 晚安好梦！🌙✨</p>
+        </div>
+    </footer>
+
+    <script src="script.js"></script>
+</body>
+</html>
+
