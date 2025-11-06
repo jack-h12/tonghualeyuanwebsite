@@ -74,14 +74,6 @@ createStars();
 // Contact form handling
 const contactForm = document.getElementById('contactForm');
 if (contactForm) {
-    // Set the redirect URL to the current page with a success parameter
-    const nextUrl = new URL(window.location.href);
-    nextUrl.searchParams.set('success', 'true');
-    const nextInput = contactForm.querySelector('input[name="_next"]');
-    if (nextInput) {
-        nextInput.value = nextUrl.toString();
-    }
-    
     // Show success message if redirected back
     const urlParams = new URLSearchParams(window.location.search);
     if (urlParams.get('success') === 'true') {
@@ -101,9 +93,48 @@ if (contactForm) {
         }, 100);
     }
     
-    contactForm.addEventListener('submit', (e) => {
-        // Let the form submit naturally to FormSubmit
-        // FormSubmit will handle the email sending and redirect
+    contactForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        
+        const submitButton = contactForm.querySelector('button[type="submit"]');
+        const originalText = submitButton.textContent;
+        submitButton.disabled = true;
+        submitButton.textContent = '发送中...';
+        
+        try {
+            const formData = new FormData(contactForm);
+            const response = await fetch('https://api.web3forms.com/submit', {
+                method: 'POST',
+                body: formData
+            });
+            
+            const result = await response.json();
+            
+            if (result.success) {
+                // Show success message
+                const successMessage = document.createElement('div');
+                successMessage.className = 'form-success';
+                successMessage.style.cssText = 'background: rgba(255, 215, 0, 0.1); border: 2px solid #ffd700; color: #ffd700; padding: 20px; border-radius: 12px; margin-bottom: 25px; text-align: center; font-size: 1.1rem; box-shadow: 0 4px 15px rgba(255, 215, 0, 0.2); animation: fadeIn 0.5s ease-in;';
+                successMessage.innerHTML = '✨ 谢谢您！我们已经收到您的消息，会尽快回复您！🌙✨';
+                contactForm.parentNode.insertBefore(successMessage, contactForm);
+                
+                // Reset form
+                contactForm.reset();
+                
+                // Scroll to success message
+                setTimeout(() => {
+                    successMessage.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }, 100);
+            } else {
+                alert('发送失败，请稍后再试。');
+            }
+        } catch (error) {
+            console.error('Form submission error:', error);
+            alert('发送失败，请检查网络连接后重试。');
+        } finally {
+            submitButton.disabled = false;
+            submitButton.textContent = originalText;
+        }
     });
 }
 
