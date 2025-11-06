@@ -143,13 +143,15 @@ document.querySelectorAll('section, .video-card, .feature').forEach(el => {
 // YouTube Channel Configuration
 const YOUTUBE_CHANNEL_HANDLE = '@ChineseFairyTales-l3c';
 const YOUTUBE_CHANNEL_URL = 'https://www.youtube.com/@ChineseFairyTales-l3c';
+const CHANNEL_ID_CACHE_KEY = 'youtube_channel_id_cache';
+const CHANNEL_ID_CACHE_EXPIRY = 7 * 24 * 60 * 60 * 1000; // 7 days in milliseconds
 
 // Fetch YouTube videos from channel
 async function fetchYouTubeVideos() {
     const videoGrid = document.getElementById('videoGrid');
     if (!videoGrid) return;
 
-    // Try RSS feed first (more reliable)
+    // Try RSS feed first (more reliable and faster)
     try {
         await fetchVideosFromRSS();
     } catch (error) {
@@ -159,7 +161,13 @@ async function fetchYouTubeVideos() {
             const channelPageUrl = `https://www.youtube.com/${YOUTUBE_CHANNEL_HANDLE}/videos`;
             const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(channelPageUrl)}`;
             
-            const response = await fetch(proxyUrl);
+            // Add timeout for fallback fetch
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
+            
+            const response = await fetch(proxyUrl, { signal: controller.signal });
+            clearTimeout(timeoutId);
+            
             const data = await response.json();
             const html = data.contents;
             
@@ -172,7 +180,11 @@ async function fetchYouTubeVideos() {
                 showErrorMessage();
             }
         } catch (e) {
-            console.error('All methods failed:', e);
+            if (e.name === 'AbortError') {
+                console.error('Fallback fetch timeout');
+            } else {
+                console.error('All methods failed:', e);
+            }
             showErrorMessage();
         }
     }
@@ -235,84 +247,160 @@ function parseYouTubeVideos(html) {
     return videos;
 }
 
-// Fetch from RSS feed (primary method)
-async function fetchVideosFromRSS() {
+// Get cached channel ID or fetch it
+async function getChannelId() {
+    // Check cache first
     try {
-        // Try to get channel ID first
+        const cached = localStorage.getItem(CHANNEL_ID_CACHE_KEY);
+        if (cached) {
+            const { channelId, timestamp } = JSON.parse(cached);
+            const now = Date.now();
+            // Use cached ID if it's still valid (less than 7 days old)
+            if (channelId && (now - timestamp) < CHANNEL_ID_CACHE_EXPIRY) {
+                return channelId;
+            }
+        }
+    } catch (e) {
+        console.warn('Error reading channel ID cache:', e);
+    }
+    
+    // Fetch channel ID if not cached or expired
+    try {
         const channelUrl = `https://www.youtube.com/${YOUTUBE_CHANNEL_HANDLE}`;
         const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(channelUrl)}`;
         
-        const response = await fetch(proxyUrl);
+        // Use Promise.race to add timeout
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
+        
+        const response = await fetch(proxyUrl, { signal: controller.signal });
+        clearTimeout(timeoutId);
+        
         const data = await response.json();
         const html = data.contents;
         
-        // Extract channel ID from the page (multiple possible patterns)
+        // Extract channel ID from the page (optimized patterns - most common first)
         let channelId = null;
         const patterns = [
-            /"channelId":"([^"]+)"/,
-            /"externalId":"([^"]+)"/,
-            /<link rel="canonical" href="https:\/\/www\.youtube\.com\/channel\/([^"]+)"/,
-            /channel_id=([^"&]+)/
+            /"channelId":"(UC[\w-]{22})"/,  // YouTube channel IDs are typically UC followed by 22 chars
+            /"externalId":"(UC[\w-]{22})"/,
+            /<link rel="canonical" href="https:\/\/www\.youtube\.com\/channel\/(UC[\w-]{22})"/,
+            /channel_id=(UC[\w-]{22})/
         ];
         
         for (const pattern of patterns) {
             const match = html.match(pattern);
-            if (match && match[1] && match[1].length > 10) {
+            if (match && match[1]) {
                 channelId = match[1];
                 break;
             }
         }
         
+        // Cache the channel ID if found
         if (channelId) {
-            const rssUrl = `https://www.youtube.com/feeds/videos.xml?channel_id=${channelId}`;
-            const rssProxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(rssUrl)}`;
-            
-            const rssResponse = await fetch(rssProxyUrl);
-            const rssData = await rssResponse.json();
-            const rssContent = rssData.contents;
-            
-            // Parse RSS XML
-            const parser = new DOMParser();
-            const xmlDoc = parser.parseFromString(rssContent, 'text/xml');
-            const entries = xmlDoc.querySelectorAll('entry');
-            
-            const videos = [];
-            entries.forEach((entry, index) => {
-                if (index >= 6) return; // Limit to 6 videos
-                
-                // Try different selectors for video ID
-                const videoIdElement = entry.querySelector('yt\\:videoId') || 
-                                     entry.querySelector('videoId') ||
-                                     entry.querySelector('[name="yt:videoId"]');
-                const videoId = videoIdElement?.textContent || '';
-                
-                const titleElement = entry.querySelector('title');
-                const title = titleElement?.textContent || 'Untitled';
-                
-                const mediaElement = entry.querySelector('media\\:thumbnail') || 
-                                   entry.querySelector('thumbnail');
-                const thumbnail = mediaElement?.getAttribute('url') || '';
-                
-                if (videoId) {
-                    videos.push({
-                        id: videoId,
-                        title: title,
-                        thumbnail: thumbnail,
-                        duration: '',
-                        url: `https://www.youtube.com/watch?v=${videoId}`
-                    });
-                }
-            });
-            
-            if (videos.length > 0) {
-                displayVideos(videos);
-                return;
+            try {
+                localStorage.setItem(CHANNEL_ID_CACHE_KEY, JSON.stringify({
+                    channelId,
+                    timestamp: Date.now()
+                }));
+            } catch (e) {
+                console.warn('Error caching channel ID:', e);
             }
+            return channelId;
+        }
+    } catch (error) {
+        if (error.name === 'AbortError') {
+            console.error('Channel ID fetch timeout');
+        } else {
+            console.error('Error fetching channel ID:', error);
+        }
+    }
+    
+    return null;
+}
+
+// Parse RSS XML content and extract videos
+function parseRSSFeed(rssContent) {
+    const parser = new DOMParser();
+    const xmlDoc = parser.parseFromString(rssContent, 'text/xml');
+    const entries = xmlDoc.querySelectorAll('entry');
+    
+    const videos = [];
+    entries.forEach((entry, index) => {
+        if (index >= 6) return; // Limit to 6 videos
+        
+        // Try different selectors for video ID
+        const videoIdElement = entry.querySelector('yt\\:videoId') || 
+                             entry.querySelector('videoId') ||
+                             entry.querySelector('[name="yt:videoId"]');
+        const videoId = videoIdElement?.textContent || '';
+        
+        const titleElement = entry.querySelector('title');
+        const title = titleElement?.textContent || 'Untitled';
+        
+        const mediaElement = entry.querySelector('media\\:thumbnail') || 
+                           entry.querySelector('thumbnail');
+        const thumbnail = mediaElement?.getAttribute('url') || '';
+        
+        if (videoId) {
+            videos.push({
+                id: videoId,
+                title: title,
+                thumbnail: thumbnail,
+                duration: '',
+                url: `https://www.youtube.com/watch?v=${videoId}`
+            });
+        }
+    });
+    
+    return videos;
+}
+
+// Fetch RSS feed with timeout
+async function fetchRSSFeed(rssUrl, timeout = 8000) {
+    const rssProxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(rssUrl)}`;
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), timeout);
+    
+    try {
+        const rssResponse = await fetch(rssProxyUrl, { signal: controller.signal });
+        clearTimeout(timeoutId);
+        
+        const rssData = await rssResponse.json();
+        return rssData.contents;
+    } catch (error) {
+        clearTimeout(timeoutId);
+        throw error;
+    }
+}
+
+// Fetch from RSS feed (primary method) - optimized with caching
+async function fetchVideosFromRSS() {
+    try {
+        // Get channel ID (from cache if available)
+        const channelId = await getChannelId();
+        
+        if (!channelId) {
+            throw new Error('Could not get channel ID');
         }
         
-        throw new Error('Could not extract channel ID or parse RSS feed');
+        // Fetch RSS feed directly (this is the fast path when channel ID is cached)
+        const rssUrl = `https://www.youtube.com/feeds/videos.xml?channel_id=${channelId}`;
+        const rssContent = await fetchRSSFeed(rssUrl);
+        const videos = parseRSSFeed(rssContent);
+        
+        if (videos.length > 0) {
+            displayVideos(videos);
+            return;
+        }
+        
+        throw new Error('Could not parse RSS feed or no videos found');
     } catch (error) {
-        console.error('Error fetching from RSS:', error);
+        if (error.name === 'AbortError') {
+            console.error('RSS feed fetch timeout');
+        } else {
+            console.error('Error fetching from RSS:', error);
+        }
         throw error; // Re-throw to allow fallback
     }
 }
