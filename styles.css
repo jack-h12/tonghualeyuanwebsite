@@ -177,19 +177,29 @@ body {
     text-align: center;
     max-width: 900px;
     margin: 0 auto;
-    animation: fadeInUp 1s ease-out;
+    animation: fadeInUp 1s ease-out, gentleFloat 6s ease-in-out infinite 1s;
     width: 100%;
     padding: 0 20px;
+    transform: translateY(20px);
 }
 
 @keyframes fadeInUp {
     from {
         opacity: 0;
-        transform: translateY(30px);
+        transform: translateY(50px);
     }
     to {
         opacity: 1;
-        transform: translateY(0);
+        transform: translateY(20px);
+    }
+}
+
+@keyframes gentleFloat {
+    0%, 100% {
+        transform: translateY(20px);
+    }
+    50% {
+        transform: translateY(12px);
     }
 }
 
@@ -280,6 +290,7 @@ body {
     bottom: 0;
     pointer-events: none;
     z-index: -1;
+    display: none;
 }
 
 .cloud {
@@ -287,6 +298,7 @@ body {
     background: rgba(255, 255, 255, 0.05);
     border-radius: 50px;
     opacity: 0.3;
+    display: none;
 }
 
 .cloud1 {
