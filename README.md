@@ -12,11 +12,7 @@ A beautiful, nighttime-themed portfolio website for Chinese bedtime stories YouT
 
 ## Deployment
 
-This site can be deployed to:
-- Vercel (recommended)
-- GitHub Pages
-- Netlify
-- Any static hosting service
+- You can find the deployment here: https://tonghualeyuanwebsite.vercel.app/
 
 ## Technologies
 
